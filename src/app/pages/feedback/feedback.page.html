@@ -1,0 +1,12 @@
+<div
+  class="feedback"
+  [class.error]="feedback.type === 'error'"
+  [class.info]="feedback.type === 'info'"
+  [attr.role]="feedback.type === 'error' ? 'alert' : 'status'"
+>
+  <strong>{{ feedback.type === 'error' ? 'Error:' : 'Información:' }}</strong>
+  {{ feedback.message }}
+  @if (feedback.detail) {
+    <p class="detail">{{ feedback.detail }}</p>
+  }
+</div>

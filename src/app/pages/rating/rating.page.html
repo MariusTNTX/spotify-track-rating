@@ -1,0 +1,17 @@
+<div style="font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 20px;">
+  <h1>Spotify PoC - Angular</h1>
+
+  @let trackData = spotifyData().currentTrack;
+
+  @if (trackData && trackData.item) {
+    @let trackItem = trackData.item;
+    <div style="border: 1px solid #ddd; padding: 15px; border-radius: 8px; background: #f9f9f9;">
+      <h2>Reproduciendo ahora:</h2>
+      <p><strong>Nombre del primer artista:</strong> {{ trackItem.artists?.[0]?.name || 'Desconocido' }}</p>
+      <p><strong>Nombre del álbum:</strong> {{ trackItem.album?.name || 'Desconocido' }}</p>
+      <p><strong>Nombre de la canción:</strong> {{ trackItem?.name || 'Desconocido' }}</p>
+    </div>
+  } @else {
+    <p style="font-style: italic; color: #666;">Sin Datos</p>
+  }
+</div>
