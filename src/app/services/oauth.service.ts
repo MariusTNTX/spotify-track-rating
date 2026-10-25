@@ -6,6 +6,12 @@ import { ConfigService } from './config.service';
 import { StorageService } from './storage.service';
 import { SpotifyService } from './spotify.service';
 
+interface SpotifyApiTokenResponse {
+  access_token: string,
+  token_type: 'Bearer',
+  expires_in: number
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -16,8 +22,8 @@ export class OauthService {
   private readonly spotifyService = inject(SpotifyService);
   private readonly destroyRef = inject(DestroyRef);
 
-  private readonly config: Signal<any> = this.configService.getConfig();
-  private readonly endpoints: Signal<any> = this.configService.getEndpoints();
+  private readonly config = this.configService.getConfig();
+  private readonly endpoints = this.configService.getEndpoints();
 
   public manageOAuth(): void {
     const urlParams = new URLSearchParams(window.location.search);
@@ -32,7 +38,7 @@ export class OauthService {
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe((accessToken: string) => {
           this.storageService.setAccessToken(accessToken);
-          this.spotifyService.getCurrentTrack();
+          this.spotifyService.getSpotifyData();
         });
     }
   }
@@ -45,8 +51,8 @@ export class OauthService {
         const params = new URLSearchParams();
         params.append('client_id', clientId);
         params.append('response_type', 'code');
-        params.append('redirect_uri', this.config().redirectUri);
-        params.append('scope', this.config().scopes);
+        params.append('redirect_uri', this.config().redirectUri || '');
+        params.append('scope', this.config().scopes || '');
         params.append('code_challenge_method', 'S256');
         params.append('code_challenge', challenge);
         document.location = `${this.config().authUrl}?${params.toString()}`;
@@ -67,13 +73,12 @@ export class OauthService {
     params.append('client_id', this.config().clientId);
     params.append('grant_type', 'authorization_code');
     params.append('code', code);
-    params.append('redirect_uri', this.config().redirectUri);
+    params.append('redirect_uri', this.config().redirectUri || '');
     params.append('code_verifier', verifier!);
 
-    const url = this.endpoints().apiToken?.url;
-    const headers = this.endpoints().apiToken?.headers;
+    const endpoint = this.endpoints().getApiToken;
 
-    return this.http.post<any>(url, params.toString(), { headers }).pipe(
+    return this.http.post<SpotifyApiTokenResponse>(endpoint.getUrl(), params.toString(), endpoint.options).pipe(
       map((response) => response.access_token),
       catchError(() => EMPTY),
     );

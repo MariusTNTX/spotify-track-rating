@@ -1,15 +1,18 @@
 import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { FeedbackData } from '../../services/feedback.service';
+import { OauthService } from '../../services/oauth.service';
+import { Button } from '../../shared/button/button';
 
 @Component({
   selector: 'app-feedback.page',
-  imports: [],
+  imports: [Button],
   templateUrl: './feedback.page.html',
   styleUrl: './feedback.page.scss',
 })
 export class FeedbackPage {
   private router = inject(Router);
+  private oauthService = inject(OauthService);
 
   public feedback = this.getFeedbackData(
     this.router.getCurrentNavigation()?.extras.state?.['feedback'] ??
@@ -36,5 +39,9 @@ export class FeedbackPage {
     }
 
     return { type: 'info', message: 'No hay información disponible.' };
+  }
+
+  refreshAccessToken(): void {
+    this.oauthService.manageOAuth();
   }
 }
