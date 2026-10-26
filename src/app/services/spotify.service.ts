@@ -1,4 +1,4 @@
-import { computed, inject, Injectable, OnDestroy, Signal, signal, WritableSignal } from '@angular/core';
+import { computed, inject, Injectable, OnDestroy, OnInit, Signal, signal, WritableSignal } from '@angular/core';
 import { concat, interval, map, Observable, Subscription, take, tap } from 'rxjs';
 import { PlaybackState, PlaylistData, RatingLevels } from '../models/custom-interfaces.model';
 import { ApiService } from './api.service';
@@ -11,7 +11,7 @@ export interface SpotifyData {
 @Injectable({
   providedIn: 'root',
 })
-export class SpotifyService implements OnDestroy {
+export class SpotifyService implements OnInit, OnDestroy {
   private apiService = inject(ApiService);
 
   private playbackState: WritableSignal<PlaybackState | null> = signal(null);
@@ -22,17 +22,21 @@ export class SpotifyService implements OnDestroy {
     mainPlaylistData: this.mainPlaylistData(),
   }));
 
-  private intervalMilliseconds: number = 300;
+  private intervalMilliseconds: number = 250;
   private interval$: Observable<number> = interval(this.intervalMilliseconds);
   private intervalSubscription: Subscription | null = null;
+
+  public ngOnInit(): void {
+    this.initTrackTimer();
+  }
 
   public ngOnDestroy(): void {
     this.pauseTrackTimer();
   }
 
   public getSpotifyData(): void {
-    const endpoints = [this.getPlaybackState(), this.getMainPlaylistData()];
-    concat(...endpoints).pipe(take(1)).subscribe();
+    const endpoints = [this.getMainPlaylistData(), this.getPlaybackState()];
+    concat(...endpoints).pipe(take(endpoints.length)).subscribe();
   }
 
   public rateTrack(trackId: string, ratingLevel: RatingLevels): void {
@@ -45,47 +49,62 @@ export class SpotifyService implements OnDestroy {
     endpoints.push(
       this.apiService.deleteTrackFromMainPlaylist(trackId), 
       this.apiService.skipToNextTrack(),
-      this.getPlaybackState(),
-      this.getMainPlaylistData()
+      this.getMainPlaylistData(),
+      this.getPlaybackState()
     );
 
-    concat(...endpoints).pipe(take(1)).subscribe(() => this.initTrackTimer());
+    concat(...endpoints).pipe(take(endpoints.length)).subscribe(() => this.initTrackTimer());
   }
 
   public skipToNextTrack(): void {
     const endpoints = [this.apiService.skipToNextTrack(), this.getPlaybackState()];
-    concat(...endpoints).pipe(take(1)).subscribe(() => this.initTrackTimer());
+    concat(...endpoints).pipe(take(endpoints.length)).subscribe(() => this.initTrackTimer());
   }
 
   public skipToPreviousTrack(): void {
     const endpoints = [this.apiService.skipToPreviousTrack(), this.getPlaybackState()];
-    concat(...endpoints).pipe(take(1)).subscribe(() => this.initTrackTimer());
+    concat(...endpoints).pipe(take(endpoints.length)).subscribe(() => this.initTrackTimer());
   }
 
   public startPlayback(): void {
     const endpoints = [this.apiService.startPlayback(), this.getPlaybackState()];
-    concat(...endpoints).pipe(take(1)).subscribe(() => this.initTrackTimer());
+    concat(...endpoints).pipe(take(endpoints.length)).subscribe(() => this.initTrackTimer());
   }
 
   public pausePlayback(): void {
     const endpoints = [this.apiService.pausePlayback(), this.getPlaybackState()];
-    concat(...endpoints).pipe(take(1)).subscribe(() => this.pauseTrackTimer());
+    concat(...endpoints).pipe(take(endpoints.length)).subscribe(() => this.pauseTrackTimer());
   }
 
   public reShufflePlayback(): void {
     const endpoints = [this.apiService.sortPlayback(), this.apiService.shufflePlayback()];
-    concat(...endpoints).pipe(take(1)).subscribe();
+    concat(...endpoints).pipe(take(endpoints.length)).subscribe(() => {
+      this.playbackState.update(state => {
+        if(state){
+          state.mustShuffle = false;
+        }
+        return state;
+      });
+    });
   }
 
   private initTrackTimer(): void {
     if(this.intervalSubscription === null) {
       this.intervalSubscription = this.interval$.subscribe(() => 
         this.playbackState.update((state) => {
-          if(state && state.currentMillisecons < state.totalMilliseconds){
-            state.currentMillisecons += this.intervalMilliseconds;
-            state.trackPercent = (state.currentMillisecons * 100) / state.totalMilliseconds
-          } else {
-            this.pauseTrackTimer();
+          if(state && state.isPlaying) {
+            if(state.currentMillisecons < state.totalMilliseconds) {
+              state.currentMillisecons += this.intervalMilliseconds;
+              state.trackPercent = (state.currentMillisecons * 100) / state.totalMilliseconds
+            } else {
+              this.getSpotifyData();
+              this.playbackState.update(state => {
+                if(state){
+                  state.mustShuffle = true;
+                }
+                return state;
+              });
+            }
           }
           return state;
         })
@@ -101,18 +120,19 @@ export class SpotifyService implements OnDestroy {
   private getPlaybackState(): Observable<PlaybackState> {
     return this.apiService.getPlaybackState()
       .pipe(
-        map(response => ({
-          trackId: response?.item?.id,
-          trackName: response?.item?.name,
-          albumName: response?.item?.album?.name,
-          albumImageUrl: response?.item?.album?.images?.[0]?.url,
-          artistName: response?.item?.artists?.map(artist => artist?.name)?.join(', '),
-          currentMillisecons: response?.progress_ms,
-          totalMilliseconds: response?.item?.duration_ms,
-          isPlaying: response?.is_playing,
-          isShuffled: response?.shuffle_state,
+        map((response): PlaybackState => ({
+          trackId: response?.item?.id || '',
+          trackName: response?.item?.name || 'Canción desconocida',
+          albumName: response?.item?.album?.name || 'Álbum desconocido',
+          albumImageUrl: response?.item?.album?.images?.[0]?.url || '',
+          artistName: response?.item?.artists?.map(artist => artist?.name)?.join(', ') || 'Artista desconocido',
+          currentMillisecons: response?.progress_ms || 0,
+          totalMilliseconds: response?.item?.duration_ms || 0,
+          isPlaying: response?.is_playing || false,
+          isShuffled: response?.shuffle_state || true,
+          mustShuffle: this.playbackState()?.mustShuffle || false,
           trackPercent: 0
-        } as PlaybackState)),
+        })),
         map(data => ({ ...data, trackPercent: (data.currentMillisecons * 100) / data.totalMilliseconds })),
         tap(data => this.playbackState.set(data))
       );
@@ -121,12 +141,12 @@ export class SpotifyService implements OnDestroy {
   private getMainPlaylistData(): Observable<PlaylistData> {
     return this.apiService.getMainPlaylistData()
       .pipe(
-        map(response => ({
-          remainingTracks: response?.items?.total,
-          totalTracks: response.description ? parseInt(response.description) : null,
+        map((response): PlaylistData => ({
+          remainingTracks: response?.items?.total || 0,
+          totalTracks: response.description ? parseInt(response.description) : 0,
           playlistPercent: 0
-        } as PlaylistData)),
-        map(data => ({ ...data, playlistPercent: (data.remainingTracks * 100) / data.totalTracks })),
+        })),
+        map(data => ({ ...data, playlistPercent: ((data.totalTracks - data.remainingTracks) * 100) / data.totalTracks })),
         tap(data => this.mainPlaylistData.set(data))
       );
   }

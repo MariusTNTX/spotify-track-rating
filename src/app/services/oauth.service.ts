@@ -28,19 +28,26 @@ export class OauthService {
   public manageOAuth(): void {
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get('code');
+    const accessToken = this.storageService.getAccessToken();
 
-    if (!code) {
+    if (!code && !accessToken) {
       this.redirectToAuthCodeFlow(this.config().clientId)
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe();
     } else {
-      this.getAccessTokenByCode(code)
+      const getAccessToken = accessToken ? of(accessToken) : this.getAccessTokenByCode(code!);
+      getAccessToken
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe((accessToken: string) => {
           this.storageService.setAccessToken(accessToken);
           this.spotifyService.getSpotifyData();
         });
     }
+  }
+
+  public refreshAccessToken(): void {
+    this.storageService.removeAccessToken();
+    this.manageOAuth();
   }
 
   private redirectToAuthCodeFlow(clientId: string): Observable<void> {
@@ -62,11 +69,6 @@ export class OauthService {
   }
 
   private getAccessTokenByCode(code: string): Observable<string> {
-    const accessToken = this.storageService.getAccessToken();
-    if (accessToken) {
-      return of(accessToken);
-    }
-
     const verifier = this.storageService.getVerifier();
 
     const params = new URLSearchParams();

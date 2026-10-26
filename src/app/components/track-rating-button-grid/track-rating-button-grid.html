@@ -1,1 +1,10 @@
-<p>track-rating-button-grid works!</p>
+<section>
+  @for (button of ratingButtons; track button.id) {
+    <div class="rate-button">
+      <button matFab extended [class]="button.className" (click)="onButtonClick(button.id)">
+        <mat-icon>{{ button.icon }}</mat-icon>
+        {{ button.label }}
+      </button>
+    </div>
+  }
+</section>

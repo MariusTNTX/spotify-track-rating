@@ -8,6 +8,18 @@ export interface FeedbackData {
   detail?: string;
 }
 
+export function isFeedbackData(value: unknown): value is FeedbackData {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'type' in value &&
+    (value.type === 'error' || value.type === 'info') &&
+    'message' in value &&
+    typeof value.message === 'string' &&
+    (!('detail' in value) || typeof value.detail === 'string')
+  );
+}
+
 @Injectable({
   providedIn: 'root',
 })

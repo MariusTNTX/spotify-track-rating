@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 
 @Component({
   selector: 'app-current-track-info-sheet',
@@ -6,4 +6,9 @@ import { Component } from '@angular/core';
   templateUrl: './current-track-info-sheet.html',
   styleUrl: './current-track-info-sheet.scss',
 })
-export class CurrentTrackInfoSheet {}
+export class CurrentTrackInfoSheet {
+  @Input() trackName?: string;
+  @Input() albumName?: string;
+  @Input() albumImageURL?: string;
+  @Input() artistName?: string;
+}

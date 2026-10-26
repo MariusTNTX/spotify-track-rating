@@ -1,0 +1,48 @@
+:host {
+  height: 50vh;
+}
+
+article {
+  height: inherit;
+  text-align: center;
+  margin: 0 1rem;
+  background-color: var(--mat-sys-on-tertiary);
+  border-radius: 1rem;
+  box-shadow: 0px 0px 6px 1px var(--mat-sys-inverse-surface);
+}
+
+.image-background {
+  height: 67%;
+  img {
+    height: stretch;
+    margin-top: 1rem;
+    border-radius: 0.5rem;
+    box-shadow: 0px 0px 3px 0px white;
+  }
+}
+
+.info-section {
+  height: 33%;
+  .info-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 1rem 0;
+    p {
+      margin: 0;
+    }
+    .track {
+      font-weight: bold;
+      font-size: large;
+    }
+  
+    .artist {
+      font-size: medium;
+      padding-top: 0.5rem;
+    }
+  
+    .album {
+      font-weight: lighter;
+    }
+  }
+}

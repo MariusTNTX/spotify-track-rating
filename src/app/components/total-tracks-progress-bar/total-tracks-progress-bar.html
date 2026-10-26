@@ -1,1 +1,5 @@
-<p>total-tracks-progress-bar works!</p>
+<app-progress-bar [percent]="percent"></app-progress-bar>
+<p class="label" [style.visibility]="remainingTracks ? 'visible' : 'hidden'">
+  <span class="tracks">{{ remainingTracks || '?' }}</span>
+  <span>canciones restantes</span>
+</p>

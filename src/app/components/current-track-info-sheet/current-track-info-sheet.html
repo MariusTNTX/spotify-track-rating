@@ -1,1 +1,14 @@
-<p>current-track-info-sheet works!</p>
+<article>
+  <div class="image-background">
+    @if(albumName && albumImageURL){
+      <img [src]="albumImageURL" [alt]="albumName + ' cover image'">
+    }
+  </div>
+  <div class="info-section">
+    <div class="info-content">
+      <p class="track">{{ trackName || 'Canción desconocida' }}</p>
+      <p class="artist">{{ artistName || 'Artista desconocido' }}</p>
+      <p class="album">{{ albumName || 'Álbum desconocido' }}</p>
+    </div>
+  </div>
+</article>

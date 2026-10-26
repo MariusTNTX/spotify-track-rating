@@ -1,0 +1,54 @@
+@use 'sass:map';
+@use '@angular/material' as mat;
+
+:host {
+  display: block;
+  height: 50vh;
+}
+
+section {
+  height: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  padding: 0 0.5rem;
+
+  .rate-button {
+    width: 50%;
+    height: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    button {
+      width: calc(100% - 0.5rem);
+      height: calc(100% - 0.5rem);
+      font-size: 2rem;
+
+      &.top {
+        --mat-fab-container-color: #{map.get(mat.$azure-palette, 50)};
+        --mat-fab-foreground-color: #{map.get(mat.$azure-palette, 95)};
+      }
+
+      &.good {
+        --mat-fab-container-color: #{map.get(mat.$green-palette, 50)};
+        --mat-fab-foreground-color: #{map.get(mat.$green-palette, 95)};
+      }
+
+      &.other {
+        --mat-fab-container-color: #{map.get(mat.$orange-palette, 50)};
+        --mat-fab-foreground-color: #{map.get(mat.$orange-palette, 95)};
+      }
+
+      &.reject {
+        --mat-fab-container-color: #{map.get(mat.$red-palette, error, 50)};
+        --mat-fab-foreground-color: #{map.get(mat.$red-palette, error, 95)};
+      }
+
+      mat-icon {
+        font-size: 2rem;
+        width: 2rem;
+        height: 2rem;
+      }
+    }
+  }
+}

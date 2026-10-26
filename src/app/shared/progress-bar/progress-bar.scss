@@ -1,0 +1,10 @@
+.progress-bar-container {
+  background-color: var(--mat-sys-inverse-primary);
+  width: 100%;
+  height: 0.5rem;
+
+  .progress-bar-content {
+    height: 0.5rem;
+    background-color: var(--mat-sys-primary);
+  }
+}

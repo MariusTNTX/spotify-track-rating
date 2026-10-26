@@ -8,7 +8,8 @@ export interface PlaybackState {
   totalMilliseconds: number,
   trackPercent: number,
   isPlaying: boolean,
-  isShuffled: boolean
+  isShuffled: boolean,
+  mustShuffle: boolean
 }
 
 export interface PlaylistData {

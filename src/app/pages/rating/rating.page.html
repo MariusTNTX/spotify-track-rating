@@ -1,4 +1,4 @@
-<div style="font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 20px;">
+<!-- <div style="font-family: sans-serif; max-width: 600px; padding: 20px;">
   <h1>Spotify PoC - Angular</h1>
 
   @let playbackState = spotifyData().playbackState;
@@ -13,4 +13,22 @@
   } @else {
     <p style="font-style: italic; color: #666;">Sin Datos</p>
   }
-</div>
+</div> -->
+@let playbackState = spotifyData().playbackState;
+@let mainPlaylistData = spotifyData().mainPlaylistData;
+<main>
+  <app-total-tracks-progress-bar 
+    [percent]="mainPlaylistData?.playlistPercent || 0"
+    [remainingTracks]="mainPlaylistData?.remainingTracks"
+  ></app-total-tracks-progress-bar>
+  <!-- <app-current-track-info-sheet
+    [trackName]="playbackState?.trackName"
+    [albumName]="playbackState?.albumName"
+    [albumImageURL]="playbackState?.albumImageUrl"
+    [artistName]="playbackState?.artistName"
+  ></app-current-track-info-sheet> -->
+  <app-track-rating-button-grid (doubleClick)="moveTrackToPlaylist($event)"></app-track-rating-button-grid>
+  <!-- <app-current-track-info-button></app-current-track-info-button>
+  <app-playback-actions-menu></app-playback-actions-menu>
+  <app-common-actions-menu></app-common-actions-menu> -->
+</main>
