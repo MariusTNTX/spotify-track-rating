@@ -17,14 +17,7 @@ export class ApiService {
 
   public getPlaybackState(): Observable<PlaybackStateResponse | null> {
     const endpoint = this.endpoints().getPlaybackState;
-    return this.http.get<PlaybackStateResponse>(endpoint.getUrl(), { ...endpoint.options, observe: 'response' }).pipe(
-      tap((response) => {
-        if (response.status === 204 || !response.body) {
-          this.feedbackService.showInfo('El reproductor está desactivado o deshabilitado en este momento.');
-        }
-      }),
-      map((response) => response.body)
-    );
+    return this.http.get<PlaybackStateResponse>(endpoint.getUrl(), { ...endpoint.options });
   }
 
   public getMainPlaylistData(): Observable<PlaylistResponse> {
@@ -46,31 +39,43 @@ export class ApiService {
   
   public skipToNextTrack(): Observable<void> {
     const endpoint = this.endpoints().skipToNextTrack;
-    return this.http.post<void>(endpoint.getUrl(), endpoint.options);
+    return this.http
+      .post(endpoint.getUrl(), {}, { ...endpoint.options, responseType: 'text' })
+      .pipe(map((): void => undefined));
   }
 
   public skipToPreviousTrack(): Observable<void> {
     const endpoint = this.endpoints().skipToPreviousTrack;
-    return this.http.post<void>(endpoint.getUrl(), endpoint.options);
+    return this.http
+      .post(endpoint.getUrl(), {}, { ...endpoint.options, responseType: 'text' })
+      .pipe(map((): void => undefined));
   }
   
   public startPlayback(): Observable<void> {
     const endpoint = this.endpoints().startPlayback;
-    return this.http.put<void>(endpoint.getUrl(), {}, endpoint.options);
+    return this.http
+      .put(endpoint.getUrl(), {}, { ...endpoint.options, responseType: 'text' })
+      .pipe(map((): void => undefined));
   }
 
   public pausePlayback(): Observable<void> {
     const endpoint = this.endpoints().pausePlayback;
-    return this.http.put<void>(endpoint.getUrl(), {}, endpoint.options);
+    return this.http
+      .put(endpoint.getUrl(), {}, { ...endpoint.options, responseType: 'text' })
+      .pipe(map((): void => undefined));
   }
 
-  public shufflePlayback(): Observable<any> {
+  public shufflePlayback(): Observable<void> {
     const shuffleEndpoint = this.endpoints().shufflePlayback;
-    return this.http.put<void>(shuffleEndpoint.getUrl(), {}, shuffleEndpoint.options);
+    return this.http
+      .put(shuffleEndpoint.getUrl(), {}, { ...shuffleEndpoint.options, responseType: 'text' })
+      .pipe(map((): void => undefined));
   }
 
-  public sortPlayback(): Observable<any> {
+  public sortPlayback(): Observable<void> {
     const sortEndpoint = this.endpoints().sortPlayback;
-    return this.http.put<void>(sortEndpoint.getUrl(), {}, sortEndpoint.options);
+    return this.http
+      .put(sortEndpoint.getUrl(), {}, { ...sortEndpoint.options, responseType: 'text' })
+      .pipe(map((): void => undefined));
   }
 }

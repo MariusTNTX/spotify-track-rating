@@ -3,7 +3,7 @@ import { inject, Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 
 export interface FeedbackData {
-  type: 'error' | 'info';
+  type: 'error' | 'info' | 'success';
   message: string;
   detail?: string;
 }
@@ -13,10 +13,9 @@ export function isFeedbackData(value: unknown): value is FeedbackData {
     typeof value === 'object' &&
     value !== null &&
     'type' in value &&
-    (value.type === 'error' || value.type === 'info') &&
+    (value.type === 'error' || value.type === 'info' || value.type === 'success') &&
     'message' in value &&
-    typeof value.message === 'string' &&
-    (!('detail' in value) || typeof value.detail === 'string')
+    typeof value.message === 'string'
   );
 }
 

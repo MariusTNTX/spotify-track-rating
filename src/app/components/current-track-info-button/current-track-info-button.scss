@@ -1,0 +1,39 @@
+@use 'sass:map';
+@use '@angular/material' as mat;
+
+:host {
+  padding: 1rem;
+}
+
+:host ::ng-deep .button-container {
+  height: stretch;
+
+  button {
+    width: 100%;
+    height: 100%;
+    border-radius: 1rem;
+    color: #{map.get(mat.$violet-palette, 90)};
+  }
+
+  .mdc-button__label {
+    display: contents;
+    height: inherit;
+    width: inherit;
+  }
+
+  .progress-button {
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    position: absolute;
+    inset: 0 auto 0 0;
+    background-color: var(--mat-sys-tertiary-container);
+    pointer-events: none;
+    transition: width 150ms ease;
+  }
+
+  .progress-label {
+    z-index: 1;
+  }
+}

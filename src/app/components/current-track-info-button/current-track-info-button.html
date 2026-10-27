@@ -1,1 +1,17 @@
-<p>current-track-info-button works!</p>
+<div class="button-container">
+  <button
+    matButton="outlined"
+    class="progress-button"
+    (pointerdown)="onPointerDown($event)"
+    (pointerup)="onPointerEnd()"
+    (pointercancel)="onPointerEnd()"
+    (lostpointercapture)="onPointerEnd()"
+  >
+    <mat-icon>visibility</mat-icon>
+    <span class="progress-label">
+      {{ currentMilliseconds | millisecondsToTime }} /
+      {{ totalMilliseconds | millisecondsToTime }}
+    </span>
+    <span class="progress-fill" [style.width.%]="percent" aria-hidden="true"></span>
+  </button>
+</div>

@@ -1,7 +1,8 @@
-import { computed, inject, Injectable, OnDestroy, OnInit, Signal, signal, WritableSignal } from '@angular/core';
-import { concat, interval, map, Observable, Subscription, take, tap } from 'rxjs';
+import { computed, inject, Injectable, OnDestroy, Signal, signal, WritableSignal } from '@angular/core';
+import { concat, interval, map, Observable, Subscription, switchMap, tap, timer } from 'rxjs';
 import { PlaybackState, PlaylistData, RatingLevels } from '../models/custom-interfaces.model';
 import { ApiService } from './api.service';
+import { FeedbackService } from './feedback.service';
 
 export interface SpotifyData {
   playbackState: PlaybackState | null,
@@ -11,8 +12,9 @@ export interface SpotifyData {
 @Injectable({
   providedIn: 'root',
 })
-export class SpotifyService implements OnInit, OnDestroy {
-  private apiService = inject(ApiService);
+export class SpotifyService implements OnDestroy {
+  private readonly apiService = inject(ApiService);
+  private readonly feedbackService = inject(FeedbackService);
 
   private playbackState: WritableSignal<PlaybackState | null> = signal(null);
   private mainPlaylistData: WritableSignal<PlaylistData | null> = signal(null);
@@ -26,17 +28,13 @@ export class SpotifyService implements OnInit, OnDestroy {
   private interval$: Observable<number> = interval(this.intervalMilliseconds);
   private intervalSubscription: Subscription | null = null;
 
-  public ngOnInit(): void {
-    this.initTrackTimer();
-  }
-
   public ngOnDestroy(): void {
     this.pauseTrackTimer();
   }
 
   public getSpotifyData(): void {
     const endpoints = [this.getMainPlaylistData(), this.getPlaybackState()];
-    concat(...endpoints).pipe(take(endpoints.length)).subscribe();
+    concat(...endpoints).subscribe(() => this.initTrackTimer());
   }
 
   public rateTrack(trackId: string, ratingLevel: RatingLevels): void {
@@ -53,62 +51,92 @@ export class SpotifyService implements OnInit, OnDestroy {
       this.getPlaybackState()
     );
 
-    concat(...endpoints).pipe(take(endpoints.length)).subscribe(() => this.initTrackTimer());
+    this.concatWithDelay(endpoints).subscribe(() => this.initTrackTimer(),);
   }
 
   public skipToNextTrack(): void {
     const endpoints = [this.apiService.skipToNextTrack(), this.getPlaybackState()];
-    concat(...endpoints).pipe(take(endpoints.length)).subscribe(() => this.initTrackTimer());
+    this.concatWithDelay(endpoints).subscribe(() => {
+      this.initTrackTimer();
+      this.playbackState.update(state =>
+        state ? { ...state, mustShuffle: true } : state,
+      );
+    });
   }
 
   public skipToPreviousTrack(): void {
     const endpoints = [this.apiService.skipToPreviousTrack(), this.getPlaybackState()];
-    concat(...endpoints).pipe(take(endpoints.length)).subscribe(() => this.initTrackTimer());
+    this.concatWithDelay(endpoints).subscribe(() => {
+      this.initTrackTimer();
+      this.playbackState.update(state =>
+        state ? { ...state, mustShuffle: true } : state,
+      );
+    });
   }
 
   public startPlayback(): void {
-    const endpoints = [this.apiService.startPlayback(), this.getPlaybackState()];
-    concat(...endpoints).pipe(take(endpoints.length)).subscribe(() => this.initTrackTimer());
+    const endpoints = [this.apiService.startPlayback()];
+    concat(...endpoints).subscribe(() => {
+      this.initTrackTimer();
+      this.playbackState.update((state) => state ? { ...state, isPlaying: true } : null);
+    });
   }
 
   public pausePlayback(): void {
-    const endpoints = [this.apiService.pausePlayback(), this.getPlaybackState()];
-    concat(...endpoints).pipe(take(endpoints.length)).subscribe(() => this.pauseTrackTimer());
+    const endpoints = [this.apiService.pausePlayback()];
+    concat(...endpoints).subscribe(() => {
+      this.playbackState.update((state) => state ? { ...state, isPlaying: false } : null);
+      this.pauseTrackTimer();
+    });
   }
 
   public reShufflePlayback(): void {
     const endpoints = [this.apiService.sortPlayback(), this.apiService.shufflePlayback()];
-    concat(...endpoints).pipe(take(endpoints.length)).subscribe(() => {
-      this.playbackState.update(state => {
-        if(state){
-          state.mustShuffle = false;
-        }
-        return state;
-      });
+    this.concatWithDelay(endpoints).subscribe(() => {
+      this.playbackState.update(state =>
+        state ? { ...state, mustShuffle: false } : state,
+      );
     });
+  }
+
+  private concatWithDelay(endpoints: Observable<unknown>[], ms: number = 100): Observable<unknown> {
+    return concat(
+      ...endpoints.map((endpoint, index) =>
+        index === 0 ? endpoint : timer(ms).pipe(switchMap(() => endpoint)),
+      ),
+    );
   }
 
   private initTrackTimer(): void {
     if(this.intervalSubscription === null) {
-      this.intervalSubscription = this.interval$.subscribe(() => 
-        this.playbackState.update((state) => {
-          if(state && state.isPlaying) {
-            if(state.currentMillisecons < state.totalMilliseconds) {
-              state.currentMillisecons += this.intervalMilliseconds;
-              state.trackPercent = (state.currentMillisecons * 100) / state.totalMilliseconds
-            } else {
-              this.getSpotifyData();
-              this.playbackState.update(state => {
-                if(state){
-                  state.mustShuffle = true;
-                }
-                return state;
-              });
+      this.intervalSubscription = this.interval$.subscribe(() => {
+        const state = this.playbackState();
+
+        if (!state?.isPlaying) {
+          return;
+        }
+
+        if (state.currentMillisecons < state.totalMilliseconds) {
+          this.playbackState.update((currentState) => {
+            if (!currentState) {
+              return currentState;
             }
-          }
-          return state;
-        })
-      );
+
+            const currentMillisecons = currentState.currentMillisecons + this.intervalMilliseconds;
+            return {
+              ...currentState,
+              currentMillisecons,
+              trackPercent: (currentMillisecons * 100) / currentState.totalMilliseconds,
+            };
+          });
+          return;
+        }
+
+        this.playbackState.update((currentState) =>
+          currentState ? { ...currentState, mustShuffle: true } : currentState,
+        );
+        this.getSpotifyData();
+      });
     }
   }
 
@@ -120,6 +148,11 @@ export class SpotifyService implements OnInit, OnDestroy {
   private getPlaybackState(): Observable<PlaybackState> {
     return this.apiService.getPlaybackState()
       .pipe(
+        tap(response => {
+          if (!response) {
+            this.feedbackService.showInfo('El reproductor está desactivado o deshabilitado en este momento.');
+          }
+        }),
         map((response): PlaybackState => ({
           trackId: response?.item?.id || '',
           trackName: response?.item?.name || 'Canción desconocida',

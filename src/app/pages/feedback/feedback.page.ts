@@ -1,8 +1,9 @@
 import { Component, inject } from '@angular/core';
-import { Router } from '@angular/router';
+import { NavigationEnd, Router } from '@angular/router';
 import { FeedbackData, isFeedbackData } from '../../services/feedback.service';
 import { OauthService } from '../../services/oauth.service';
 import { MatButtonModule } from '@angular/material/button';
+import { filter, take } from 'rxjs';
 
 @Component({
   selector: 'app-feedback-page.page',
@@ -18,6 +19,28 @@ export class FeedbackPage {
     this.router.getCurrentNavigation()?.extras.state?.['feedback'] ??
       window.history.state?.feedback,
   );
+
+  constructor() {
+    const navigationState =
+      this.router.getCurrentNavigation()?.extras.state ?? window.history.state;
+
+    if (
+      typeof navigationState === 'object' &&
+      navigationState !== null &&
+      isFeedbackData(navigationState['feedback'])
+    ) {
+      this.router.events
+        .pipe(
+          filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+          take(1),
+        )
+        .subscribe(() => {
+          const state = { ...window.history.state };
+          Reflect.deleteProperty(state, 'feedback');
+          window.history.replaceState(state, '');
+        });
+    }
+  }
 
   private getFeedbackData(value: unknown): FeedbackData {
     if (isFeedbackData(value)) {

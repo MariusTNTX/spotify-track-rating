@@ -48,7 +48,10 @@ export class ConfigService {
     productionOriginURL: 'https://mariustntx.github.io',
     productionURL: 'https://mariustntx.github.io/spotify-track-rating',
     localURL: 'http://127.0.0.1:4200/',
+    // ORIGINAL:
     mainPlaylistId: '4qDf6jrFI94ehHrlOyZMwp'
+    // MOCK:
+    // mainPlaylistId: '261o0atBLSdQPjOKEx7MZy'
   };
 
   private endpointList: CustomEndpoints = {

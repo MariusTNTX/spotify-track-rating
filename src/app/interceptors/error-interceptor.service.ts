@@ -36,7 +36,7 @@ export class ErrorInterceptorService implements HttpInterceptor {
 
     return next.handle(requestWithoutErrorMessage).pipe(
       catchError((error: unknown) => {
-        if (error instanceof HttpErrorResponse) {
+        if (error instanceof HttpErrorResponse && error.status >= 400) {
           let message = 'Error desconocido al comunicarse con Spotify.';
 
           switch (error.status) {

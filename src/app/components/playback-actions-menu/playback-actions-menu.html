@@ -1,1 +1,27 @@
-<p>playback-actions-menu works!</p>
+<section>
+  <button matMiniFab [disabled]="mustDisable" (click)="onSkipPrevious()">
+    <mat-icon>skip_previous</mat-icon>
+  </button>
+  <button 
+    matMiniFab 
+    [disabled]="mustDisable" 
+    matBadge="!" 
+    matBadgePosition="after" 
+    [matBadgeHidden]="!mustReShuffle" 
+    (click)="onReShuffle()">
+    <mat-icon>shuffle</mat-icon>
+  </button>
+  <button matMiniFab [disabled]="mustDisable" (click)="isPlaying ? onPause() : onPlay()">
+    @if (isPlaying) {
+      <mat-icon>pause</mat-icon>
+    } @else {
+      <mat-icon>play_arrow</mat-icon>
+    }
+  </button>
+  <button matMiniFab [disabled]="mustDisable" (click)="onRefresh()">
+    <mat-icon>refresh</mat-icon>
+  </button>
+  <button matMiniFab [disabled]="mustDisable" (click)="onSkipNext()">
+    <mat-icon>skip_next</mat-icon>
+  </button>
+</section>

@@ -1,34 +1,42 @@
-<!-- <div style="font-family: sans-serif; max-width: 600px; padding: 20px;">
-  <h1>Spotify PoC - Angular</h1>
-
-  @let playbackState = spotifyData().playbackState;
-
-  @if (playbackState) {
-    <div style="border: 1px solid #ddd; padding: 15px; border-radius: 8px; background: #f9f9f9;">
-      <h2>Reproduciendo ahora:</h2>
-      <p><strong>Nombre del artista:</strong> {{ playbackState.artistName || 'Desconocido' }}</p>
-      <p><strong>Nombre del álbum:</strong> {{ playbackState.albumName || 'Desconocido' }}</p>
-      <p><strong>Nombre de la canción:</strong> {{ playbackState.trackName || 'Desconocido' }}</p>
-    </div>
-  } @else {
-    <p style="font-style: italic; color: #666;">Sin Datos</p>
-  }
-</div> -->
 @let playbackState = spotifyData().playbackState;
 @let mainPlaylistData = spotifyData().mainPlaylistData;
+
 <main>
   <app-total-tracks-progress-bar 
     [percent]="mainPlaylistData?.playlistPercent || 0"
     [remainingTracks]="mainPlaylistData?.remainingTracks"
   ></app-total-tracks-progress-bar>
-  <!-- <app-current-track-info-sheet
-    [trackName]="playbackState?.trackName"
-    [albumName]="playbackState?.albumName"
-    [albumImageURL]="playbackState?.albumImageUrl"
-    [artistName]="playbackState?.artistName"
-  ></app-current-track-info-sheet> -->
-  <app-track-rating-button-grid (doubleClick)="moveTrackToPlaylist($event)"></app-track-rating-button-grid>
-  <!-- <app-current-track-info-button></app-current-track-info-button>
-  <app-playback-actions-menu></app-playback-actions-menu>
-  <app-common-actions-menu></app-common-actions-menu> -->
+
+  <div class="variable-height-container">
+    @if (showTrackSheet) {
+      <app-current-track-info-sheet
+        [trackName]="playbackState?.trackName"
+        [albumName]="playbackState?.albumName"
+        [albumImageURL]="playbackState?.albumImageUrl"
+        [artistName]="playbackState?.artistName"
+      ></app-current-track-info-sheet>
+    } @else {
+      <app-track-rating-button-grid 
+        (doubleClick)="moveTrackToPlaylist($event)"
+      ></app-track-rating-button-grid>
+    }
+
+    <app-current-track-info-button 
+      [currentMilliseconds]="playbackState?.currentMillisecons"
+      [totalMilliseconds]="playbackState?.totalMilliseconds"
+      [percent]="playbackState?.trackPercent"
+      (press)="showTrackSheet = $event"
+    ></app-current-track-info-button>
+  </div>
+
+  <app-playback-actions-menu 
+    [isPlaying]="playbackState?.isPlaying"
+    [mustReShuffle]="playbackState?.mustShuffle"
+    (skipPrevious)="onSkipPrevious()"
+    (reShuffle)="onReShuffle()"
+    (play)="onPlay()"
+    (pause)="onPause()"
+    (refresh)="onRefresh()"
+    (skipNext)="onSkipNext()"
+  ></app-playback-actions-menu>
 </main>
