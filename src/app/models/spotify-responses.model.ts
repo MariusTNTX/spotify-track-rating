@@ -20,6 +20,11 @@ export interface PlaylistResponse {
   }
 }
 
+export interface QueueResponse {
+  currently_playing: TrackObject,
+  queue?: TrackObject[]
+}
+
 export interface SnapshotPostOperationResponse {
   snapshot_id: string
 }

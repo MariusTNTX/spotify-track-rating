@@ -12,6 +12,7 @@ import { MatBadgeModule } from '@angular/material/badge';
 export class PlaybackActionsMenu {
   @Input() isPlaying?: boolean;
   @Input() mustReShuffle?: boolean = false;
+  @Input() disabled?: boolean = false;
 
   @Output() skipPrevious = new EventEmitter<void>();
   @Output() reShuffle = new EventEmitter<void>();
@@ -21,7 +22,7 @@ export class PlaybackActionsMenu {
   @Output() skipNext = new EventEmitter<void>();
 
   get mustDisable(): boolean {
-    return this.isPlaying === undefined;
+    return this.isPlaying === undefined || this.disabled === true;
   }
 
   public onSkipPrevious(): void {

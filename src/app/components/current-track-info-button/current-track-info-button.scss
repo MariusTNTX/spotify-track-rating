@@ -13,6 +13,14 @@
     height: 100%;
     border-radius: 1rem;
     color: #{map.get(mat.$violet-palette, 90)};
+    font-size: 2rem;
+
+    mat-icon {
+      font-size: 2rem;
+      width: 2rem;
+      height: 2rem;
+      margin-right: 1rem;
+    }
   }
 
   .mdc-button__label {

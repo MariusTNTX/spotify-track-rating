@@ -6,6 +6,7 @@ export interface PlaybackState {
   artistName: string,
   currentMillisecons: number,
   totalMilliseconds: number,
+  lastTimestamp: number,
   trackPercent: number,
   isPlaying: boolean,
   isShuffled: boolean,

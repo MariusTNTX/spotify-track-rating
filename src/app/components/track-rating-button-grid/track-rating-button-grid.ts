@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { RatingLevels } from '../../models/custom-interfaces.model';
@@ -17,6 +17,8 @@ interface RatingButton {
 })
 export class TrackRatingButtonGrid {
 
+  @Input() disabled?: boolean = false;
+  
   @Output() doubleClick: EventEmitter<RatingLevels> = new EventEmitter<RatingLevels>();
   private lastButtonClick: { ratingLevel: RatingLevels; timestamp: number } | null = null;
 

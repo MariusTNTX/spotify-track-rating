@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { map, Observable, switchMap, tap } from 'rxjs';
-import { PlaybackStateResponse, PlaylistResponse, SnapshotPostOperationResponse } from '../models/spotify-responses.model';
+import { PlaybackStateResponse, PlaylistResponse, QueueResponse, SnapshotPostOperationResponse } from '../models/spotify-responses.model';
 import { ConfigService } from './config.service';
 import { FeedbackService } from './feedback.service';
 
@@ -23,6 +23,11 @@ export class ApiService {
   public getMainPlaylistData(): Observable<PlaylistResponse> {
     const endpoint = this.endpoints().getPlaylistData;
     return this.http.get<PlaylistResponse>(endpoint.getUrl(), endpoint.options);
+  }
+
+  public getQueueData(): Observable<QueueResponse> {
+    const endpoint = this.endpoints().getQueueData;
+    return this.http.get<QueueResponse>(endpoint.getUrl(), endpoint.options);
   }
 
   public addTrackToPlaylist(trackId: string, playlistId: string): Observable<SnapshotPostOperationResponse> {

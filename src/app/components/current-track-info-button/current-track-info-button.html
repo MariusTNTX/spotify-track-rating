@@ -2,6 +2,7 @@
   <button
     matButton="outlined"
     class="progress-button"
+    [disabled]="disabled"
     (pointerdown)="onPointerDown($event)"
     (pointerup)="onPointerEnd()"
     (pointercancel)="onPointerEnd()"

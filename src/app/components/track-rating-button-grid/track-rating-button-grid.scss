@@ -31,7 +31,7 @@ section {
 
       &.good {
         --mat-fab-container-color: #{map.get(mat.$green-palette, 50)};
-        --mat-fab-foreground-color: #{map.get(mat.$green-palette, 95)};
+        --mat-fab-foreground-color: #{map.get(mat.$green-palette, 99)};
       }
 
       &.other {

@@ -27,6 +27,7 @@ export interface CustomEndpoints {
   getApiToken: CustomEndpoint,
   getPlaybackState: CustomEndpoint,
   getPlaylistData: CustomEndpoint,
+  getQueueData: CustomEndpoint,
   addItemToPlaylist: CustomEndpoint,
   removeItemToPlaylist: CustomEndpoint,
   skipToNextTrack: CustomEndpoint,
@@ -77,6 +78,13 @@ export class ConfigService {
       options: {
         headers: { 'X-Error-Message': 'No se pudo obtener la información de la playlist principal.' },
         params: { market: 'ES', fields: 'description,items.total' }
+      }
+    },
+    getQueueData: {
+      getUrl: () => 'https://api.spotify.com/v1/me/player/queue',
+      scopes: ['user-read-currently-playing', 'user-read-playback-state'],
+      options: {
+        headers: { 'X-Error-Message': 'No se pudo obtener la cola de reproducción.' }
       }
     },
     addItemToPlaylist: {

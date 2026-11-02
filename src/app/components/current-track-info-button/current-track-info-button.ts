@@ -13,6 +13,7 @@ export class CurrentTrackInfoButton {
   @Input() currentMilliseconds?: number;
   @Input() totalMilliseconds?: number;
   @Input() percent?: number;
+  @Input() disabled?: boolean = false;
   @Output() press = new EventEmitter<boolean>();
 
   private isPressed = false;
